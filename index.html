@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Momentum — Workout Scheduler</title>
+  <meta name="description" content="Plan runs, gym sessions, walks and rides. Track completed workouts and estimated calories.">
+  <meta name="theme-color" content="#0b0f17">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0f17'/%3E%3Cpath d='M14 40 L26 26 L34 34 L50 18' stroke='%23c6ff3d' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="hero" id="hero">
+    <div class="hero-tiles" aria-hidden="true">
+      <div class="tile" style="background-image:url(img/running-hero.jpg)"><span>Running</span></div>
+      <div class="tile" style="background-image:url(img/workout-hero.jpg)"><span>Workout</span></div>
+      <div class="tile" style="background-image:url(img/walking-hero.jpg)"><span>Walking</span></div>
+      <div class="tile" style="background-image:url(img/cycling-hero.jpg)"><span>Cycling</span></div>
+    </div>
+    <div class="hero-shade"></div>
+    <nav class="topbar">
+      <a class="brand" href="#" aria-label="Momentum home">
+        <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b0f17"/><path d="M14 40 L26 26 L34 34 L50 18" stroke="#c6ff3d" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Momentum</span>
+      </a>
+      <button class="icon-btn" id="settingsBtn" type="button" aria-haspopup="dialog" aria-label="Settings">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.3 7.3 0 0 0-1.7-1L15 3.3h-4l-.3 2.7a7.3 7.3 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.7 1.7 1l.3 2.7h4l.3-2.7c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.4L19.4 13zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
+        <span class="weight-chip" id="weightChip">70 kg</span>
+      </button>
+    </nav>
+    <div class="hero-content">
+      <p class="eyebrow" id="greeting">Let's move</p>
+      <h1>Plan it. Do it. <span class="grad">Own it.</span></h1>
+      <p class="next-up" id="nextUp">Nothing scheduled yet — plan your first workout below.</p>
+      <figure class="quote" id="quoteBox" aria-live="polite">
+        <blockquote id="quoteText"></blockquote>
+        <figcaption id="quoteAuthor"></figcaption>
+        <button type="button" class="ghost-btn" id="nextQuoteBtn">Next quote
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M13 5l7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2l-4.6-4.6z"/></svg>
+        </button>
+      </figure>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="stats" aria-label="This week">
+      <div class="stat"><span class="stat-label">Workouts this week</span><strong id="statCount">0</strong><small id="statCountSub">0 planned</small></div>
+      <div class="stat"><span class="stat-label">Distance</span><strong id="statKm">0</strong><small id="statKmSub">km done</small></div>
+      <div class="stat"><span class="stat-label">Active time</span><strong id="statMin">0</strong><small id="statMinSub">min done</small></div>
+      <div class="stat kcal-stat"><span class="stat-label">Calories</span><strong id="statKcal">0</strong><small id="statKcalSub">kcal burned</small></div>
+    </section>
+
+    <div class="layout">
+      <section class="panel form-panel" id="formPanel" aria-labelledby="formTitle">
+        <h2 id="formTitle">Plan a workout</h2>
+        <form id="workoutForm" novalidate>
+          <fieldset class="type-picker">
+            <legend>Type</legend>
+            <label class="type-opt"><input type="radio" name="type" value="running" checked><span style="background-image:url(img/running-thumb.jpg)"><b>Running</b></span></label>
+            <label class="type-opt"><input type="radio" name="type" value="workout"><span style="background-image:url(img/workout-thumb.jpg)"><b>Workout</b></span></label>
+            <label class="type-opt"><input type="radio" name="type" value="walking"><span style="background-image:url(img/walking-thumb.jpg)"><b>Walking</b></span></label>
+            <label class="type-opt"><input type="radio" name="type" value="cycling"><span style="background-image:url(img/cycling-thumb.jpg)"><b>Cycling</b></span></label>
+          </fieldset>
+
+          <div class="grid2">
+            <label class="field"><span>Date</span><input type="date" name="date" id="dateInput" required></label>
+            <label class="field"><span>Time</span><input type="time" name="time" id="timeInput" required></label>
+          </div>
+
+          <div class="field">
+            <span>Measure by</span>
+            <div class="segmented" role="radiogroup" aria-label="Measure by">
+              <label><input type="radio" name="measure" value="distance" checked><span>Distance (km)</span></label>
+              <label><input type="radio" name="measure" value="duration"><span>Duration (min)</span></label>
+            </div>
+            <small class="hint" id="measureHint" hidden>Strength/gym workouts are tracked by time only.</small>
+          </div>
+
+          <div class="grid2">
+            <label class="field"><span id="valueLabel">Distance (km)</span>
+              <input type="number" name="value" id="valueInput" inputmode="decimal" min="0.1" step="0.1" placeholder="e.g. 5" required>
+            </label>
+            <label class="field"><span>Intensity</span>
+              <select name="intensity" id="intensityInput">
+                <option value="light">Light</option>
+                <option value="moderate" selected>Moderate</option>
+                <option value="vigorous">Vigorous</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="field"><span>Notes <em>(optional)</em></span>
+            <textarea name="notes" id="notesInput" rows="2" maxlength="300" placeholder="Route, sets, playlist, who you're meeting…"></textarea>
+          </label>
+
+          <div class="estimate" id="estimate" aria-live="polite">
+            <div class="est-kcal"><strong id="estKcal">0</strong><span>kcal est.</span></div>
+            <div class="est-detail" id="estDetail">Enter a distance or duration</div>
+          </div>
+          <details class="how">
+            <summary>How is this estimated?</summary>
+            <p><b>kcal = MET × body weight (kg) × hours.</b> MET values are approximate, from the Compendium of Physical Activities.</p>
+            <ul>
+              <li><b>Running</b> — light 8.3 (7:30 /km), moderate 9.8 (6:00 /km), vigorous 11.8 (5:00 /km)</li>
+              <li><b>Walking</b> — light 3.0 (15:00 /km), moderate 3.5 (12:00 /km), vigorous 5.0 (~9:20 /km)</li>
+              <li><b>Cycling</b> — light 6.8 (17 km/h), moderate 8.0 (20 km/h), vigorous 10.0 (24 km/h)</li>
+              <li><b>Workout</b> (strength / gym) — light 3.5, moderate 5.0, vigorous 6.0; time only</li>
+            </ul>
+            <p>Distance entries are converted to time using the pace shown. Real burn varies with fitness, terrain, rest periods and more — treat it as a ballpark.</p>
+          </details>
+          <p class="form-error" id="formError" role="alert" hidden></p>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn" id="submitBtn">Add to schedule</button>
+            <button type="button" class="ghost-btn" id="cancelEditBtn" hidden>Cancel</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel list-panel">
+        <div class="tabs" role="tablist">
+          <button role="tab" class="tab active" id="tabUpcoming" aria-selected="true" aria-controls="upcomingList">Upcoming <span class="count" id="upcomingCount">0</span></button>
+          <button role="tab" class="tab" id="tabHistory" aria-selected="false" aria-controls="historyList">History <span class="count" id="historyCount">0</span></button>
+        </div>
+        <div id="upcomingList" role="tabpanel" aria-labelledby="tabUpcoming"></div>
+        <div id="historyList" role="tabpanel" aria-labelledby="tabHistory" hidden></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Your data stays in this browser (localStorage). Nothing is uploaded.</p>
+    <p class="credits">Photos (Wikimedia Commons):
+      <a href="https://commons.wikimedia.org/wiki/File:Julien_Chorier,_ultra_traileur.jpg" target="_blank" rel="noopener">Running — Peignée Verticale / Damien Rosso, CC BY 4.0</a> ·
+      <a href="https://commons.wikimedia.org/wiki/File:Attractive_man_lifting_dumbbell_weight_for_exercise_in_fitness_gym.jpg" target="_blank" rel="noopener">Workout — Nenad Stojkovic, CC BY 2.0</a> ·
+      <a href="https://commons.wikimedia.org/wiki/File:Mountaineering_Man_Trail_Path_Mountains.jpg" target="_blank" rel="noopener">Walking — Hermann, CC0</a> ·
+      <a href="https://commons.wikimedia.org/wiki/File:Marianne_Vos_La_Fl%C3%A8che_Wallonne_Femmes_2013.jpg" target="_blank" rel="noopener">Cycling — “...some guy”, CC BY 2.0</a>.
+      Images cropped and compressed.
+    </p>
+  </footer>
+
+  <dialog id="settingsDialog" class="dialog">
+    <form method="dialog" id="settingsForm">
+      <h2>Settings</h2>
+      <label class="field"><span>Body weight (kg)</span>
+        <input type="number" id="weightInput" min="25" max="300" step="0.5" inputmode="decimal" required>
+      </label>
+      <p class="hint">Used for calorie estimates. Stored only on this device.</p>
+      <div class="danger-zone">
+        <button type="button" class="ghost-btn" id="sampleBtn">Add sample workouts</button>
+        <button type="button" class="ghost-btn danger" id="clearBtn">Delete all workouts</button>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="primary-btn" value="save" id="saveSettingsBtn">Save</button>
+        <button type="submit" class="ghost-btn" value="cancel" formnovalidate>Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span id="toastText"></span>
+    <button type="button" id="toastUndo" class="toast-undo" hidden>Undo</button>
+  </div>
+
+  <script src="js/calc.js"></script>
+  <script src="js/quotes.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
