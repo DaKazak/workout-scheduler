@@ -328,8 +328,11 @@ table.lb { width: 100%; border-collapse: separate; border-spacing: 0 6px; font-s
 .explore-head h2 { margin: 0 0 4px; }
 .explore-head p { margin: 0; }
 .explore-tools { display: flex; gap: 8px; flex-wrap: wrap; }
-.explore-tools input, .explore-tools select { min-height: 40px; }
-.explore-tools input { min-width: 200px; }
+.explore-tools { flex: 0 1 auto; flex-wrap: nowrap; }
+.explore-tools input, .explore-tools select { width: auto; min-height: 44px; }
+.explore-tools input { min-width: 220px; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--line);
+  background: rgba(255,255,255,.04); outline: none; transition: border-color .15s, background .15s; }
+.explore-tools select { min-width: 150px; }
 .explore-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-bottom: 18px; }
 .explore-grid .panel + .panel { margin-bottom: 0; }
 .explore-empty { grid-column: 1 / -1; text-align: center; }
@@ -365,7 +368,8 @@ table.lb { width: 100%; border-collapse: separate; border-spacing: 0 6px; font-s
 .ex-layout > div > .panel { margin: 0; }
 @media (max-width: 640px) {
   .explore-grid { grid-template-columns: 1fr; }
-  .explore-tools, .explore-tools input { width: 100%; min-width: 0; }
+  .explore-tools { width: 100%; flex-wrap: wrap; }
+  .explore-tools input, .explore-tools select { min-width: 0; }
   .explore-tools input { flex: 1 1 100%; }
   .explore-tools select { flex: 1; }
   .ex-phead .group-actions { width: 100%; }
