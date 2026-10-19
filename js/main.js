@@ -42,7 +42,8 @@ const state = {
   editingId: null,
   quoteIndex: -1,
   authTab: 'login',
-  pendingJoin: null
+  pendingJoin: null,
+  explore: { list: null, q: '', sport: '', sort: 'active', previewId: null, seq: 0 }
 };
 
 // ---------- tiny utils ----------
@@ -693,7 +694,7 @@ $('toastUndo').addEventListener('click', () => {
 // Groups
 // ======================================================================
 async function loadGroups() {
-  const { data, error } = await state.sb.from('group_members').select('role, groups(id,name,emoji,color,invite_code,created_by,created_at)').eq('user_id', state.user.id);
+  const { data, error } = await state.sb.from('group_members').select('role, groups(id,name,emoji,color,invite_code,created_by,created_at,visibility,description)').eq('user_id', state.user.id);
   if (error) throw error;
   state.groups = data.filter((r) => r.groups).map((r) => Object.assign({}, r.groups, { role: r.role }))
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -806,10 +807,13 @@ function renderGroupView() {
     return;
   }
   $('noGroup').classList.remove('local');
+  $('exploreCtaBtn').closest('.panel').hidden = false;
   if (!g) return;
   $('groupEmoji').textContent = g.emoji;
   $('groupEmoji').style.setProperty('--gc', g.color);
   $('groupName').textContent = g.name;
+  $('groupDesc').textContent = g.description || '';
+  $('groupDesc').hidden = !g.description;
   const d = state.groupData && state.groupData.gid === g.id ? state.groupData : null;
   $('groupMeta').textContent = d ? t('group.meta', { n: d.members.length, role: g.role === 'admin' ? t('group.youAdmin') : t('group.youMember') }) : t('loading');
   document.querySelectorAll('#groupView .admin-only').forEach((n) => { n.hidden = !isAdmin(); });
@@ -822,6 +826,7 @@ function renderGroupView() {
 }
 
 function renderNoGroupLocal() {
+  $('exploreCtaBtn').closest('.panel').hidden = true;
   const box = $('noGroup');
   box.hidden = false;
   box.classList.add('local');
@@ -1135,6 +1140,7 @@ function openGroupDialog() {
   picker($('gEmoji'), GROUP_EMOJIS, GROUP_EMOJIS[0], 'emoji');
   picker($('gColor'), COLORS, COLORS[0], 'color');
   $('gJoinCode').value = '';
+  $('gDesc').value = ''; $('gVis').value = 'public';
   showErr('groupError', '');
   openDialog($('groupDialog'));
 }
@@ -1143,7 +1149,7 @@ $('groupForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = $('gName').value.trim();
   if (!name) return showErr('groupError', t('val.groupName'));
-  const { data, error } = await state.sb.rpc('create_group', { p_name: name, p_emoji: $('gEmoji').dataset.value, p_color: $('gColor').dataset.value });
+  const { data, error } = await state.sb.rpc('create_group', { p_name: name, p_emoji: $('gEmoji').dataset.value, p_color: $('gColor').dataset.value, p_visibility: $('gVis').value, p_description: $('gDesc').value.trim() || null });
   if (error) return showErr('groupError', errMsg(error));
   $('groupDialog').close();
   await loadGroups();
@@ -1225,8 +1231,9 @@ function openManage() {
   picker($('mEmoji'), GROUP_EMOJIS.includes(g.emoji) ? GROUP_EMOJIS : [g.emoji].concat(GROUP_EMOJIS), g.emoji, 'emoji');
   picker($('mColor'), COLORS.includes(g.color) ? COLORS : [g.color].concat(COLORS), g.color, 'color');
   document.querySelectorAll('#manageDialog .admin-only').forEach((n) => { n.hidden = !isAdmin(); });
+  $('mDesc').value = g.description || ''; $('mVis').value = g.visibility || 'private';
   showErr('manageError', '');
-  renderManageGoals(); renderMembers();
+  renderManageGoals(); renderMembers(); renderRequests();
   openDialog($('manageDialog'));
 }
 $('manageBtn').addEventListener('click', openManage);
@@ -1278,16 +1285,39 @@ function renderMembers() {
     ]));
   });
 }
+async function renderRequests() {
+  const box = clear($('mRequests'));
+  if (!isAdmin()) return;
+  const gid = state.groupId;
+  const { data, error } = await state.sb.rpc('list_join_requests', { p_group: gid });
+  if (error || gid !== state.groupId) return;
+  if (!data.length) { box.appendChild(el('p', { class: 'muted', text: t('req.none') })); return; }
+  data.forEach((r) => box.appendChild(el('div', { class: 'member' }, [
+    avatar(r, 'sm'),
+    el('span', { class: 'm-name', text: r.display_name }),
+    el('em', { class: 'role', text: timeAgo(r.created_at) }),
+    el('span', { class: 'm-actions' }, [
+      el('button', { type: 'button', class: 'primary-btn slim', text: t('req.approve'), onclick: () => respondRequest(r, true) }),
+      el('button', { type: 'button', class: 'ghost-btn slim danger', text: t('req.decline'), onclick: () => respondRequest(r, false) })
+    ])
+  ])));
+}
+async function respondRequest(r, approve) {
+  const { error } = await state.sb.rpc('respond_join_request', { p_group: state.groupId, p_user: r.user_id, p_approve: approve });
+  if (error) return showErr('manageError', errMsg(error));
+  toast(approve ? t('req.approved', { name: r.display_name }) : t('req.declined'));
+  await refreshGroup(); renderMembers(); renderRequests();
+}
 async function memberAction(fn, args) {
   const { error } = await state.sb.rpc(fn, args);
   if (error) return showErr('manageError', errMsg(error));
-  await loadGroups(); await refreshGroup(); renderMembers();
+  await loadGroups(); await refreshGroup(); renderMembers(); renderRequests();
   document.querySelectorAll('#manageDialog .admin-only').forEach((n) => { n.hidden = !isAdmin(); });
 }
 $('mSave').addEventListener('click', async () => {
   const name = $('mName').value.trim();
   if (!name) return showErr('manageError', t('val.groupName'));
-  const { error } = await state.sb.from('groups').update({ name, emoji: $('mEmoji').dataset.value, color: $('mColor').dataset.value }).eq('id', state.groupId);
+  const { error } = await state.sb.from('groups').update({ name, emoji: $('mEmoji').dataset.value, color: $('mColor').dataset.value, description: $('mDesc').value.trim() || null, visibility: $('mVis').value }).eq('id', state.groupId);
   if (error) return showErr('manageError', errMsg(error));
   await loadGroups(); renderAll(); renderGroupView(); toast(t('manage.saved'));
 });
@@ -1304,6 +1334,7 @@ $('leaveGroupBtn').addEventListener('click', async () => {
   if (error) return showErr('manageError', errMsg(error));
   $('manageDialog').close();
   state.groupId = null; state.groupData = null;
+  state.explore.list = null;
   await loadGroups(); renderAll(); refreshGroup(); toast(t('manage.left', { name: g.name }));
 });
 $('deleteGroupBtn').addEventListener('click', async () => {
@@ -1352,6 +1383,190 @@ $('challengeForm').addEventListener('submit', async (e) => {
   $('challengeDialog').close(); toast(t('ch.created')); refreshGroup();
 });
 $('refreshFeedBtn').addEventListener('click', () => refreshGroup());
+
+// ======================================================================
+// Explore
+// ======================================================================
+const SPORT_EMOJI = { running: '🏃', cycling: '🚴', walking: '🚶', workout: '💪' };
+$('exSearch').placeholder = t('ex.search');
+$('exploreCtaBtn').addEventListener('click', () => setView('explore'));
+$('exSearch').addEventListener('input', (e) => { state.explore.q = e.target.value.trim().toLowerCase(); renderExploreList(); });
+$('exSport').addEventListener('change', (e) => { state.explore.sport = e.target.value; renderExploreList(); });
+$('exSort').addEventListener('change', (e) => { state.explore.sort = e.target.value; renderExploreList(); });
+
+async function openExplore(force) {
+  const remote = state.mode === 'remote';
+  $('exploreLocal').hidden = remote;
+  $('exploreBrowse').hidden = !remote || !!state.explore.previewId;
+  $('explorePreview').hidden = !remote || !state.explore.previewId;
+  if (!remote) return;
+  if (state.explore.previewId) return;
+  if (state.explore.list && !force) { renderExploreList(); return; }
+  const seq = ++state.explore.seq;
+  clear($('exploreGrid')).appendChild(el('p', { class: 'muted', text: t('loading') }));
+  const { data, error } = await state.sb.rpc('explore_groups', { p_today: today() });
+  if (seq !== state.explore.seq) return;
+  if (error) { clear($('exploreGrid')).appendChild(el('p', { class: 'form-error', text: errMsg(error) })); return; }
+  state.explore.list = data || [];
+  renderExploreList();
+}
+
+function visBadge(v) { return el('span', { class: 'vis-badge vis-' + v, text: t('vis.badge.' + v) }); }
+function avatarStack(list, total) {
+  const wrap = el('div', { class: 'avatar-stack' });
+  (list || []).forEach((a) => wrap.appendChild(avatar({ avatar_emoji: a.emoji, avatar_color: a.color, display_name: a.name }, 'sm')));
+  if (total > (list || []).length) wrap.appendChild(el('span', { class: 'avatar sm more-av', text: '+' + (total - list.length) }));
+  return wrap;
+}
+function chCountText(n) { return n === 0 ? t('ex.noChallenges') : n === 1 ? t('ex.challenge1') : t('ex.challenges', { n }); }
+
+function renderExploreList() {
+  const grid = clear($('exploreGrid'));
+  const all = state.explore.list || [];
+  const { q, sport, sort } = state.explore;
+  let list = all.filter((g) => (!q || g.name.toLowerCase().includes(q) || (g.description || '').toLowerCase().includes(q))
+    && (!sport || (g.sports || []).includes(sport)));
+  const cmp = {
+    active: (a, b) => b.month_workouts - a.month_workouts || b.month_points - a.month_points,
+    members: (a, b) => b.member_count - a.member_count || b.month_workouts - a.month_workouts,
+    newest: (a, b) => String(b.created_at).localeCompare(String(a.created_at))
+  }[sort];
+  list = list.slice().sort(cmp);
+  if (!list.length) { grid.appendChild(el('div', { class: 'panel empty-small explore-empty', text: all.length ? t('ex.empty') : t('ex.none') })); return; }
+  list.forEach((g) => grid.appendChild(exploreCard(g)));
+}
+
+function exploreCard(g) {
+  const em = el('span', { class: 'group-emoji', text: g.emoji }); em.style.setProperty('--gc', g.color);
+  const top = (g.top3 || []);
+  const card = el('article', { class: 'panel ex-card', tabindex: '0', role: 'button', 'aria-label': g.name, 'data-id': g.id }, [
+    el('div', { class: 'ex-top' }, [em, el('div', { class: 'ex-title' }, [
+      el('h3', { text: g.name }),
+      el('p', { class: 'muted', text: t('ex.members', { n: g.member_count }) + ' · ' }, [visBadge(g.visibility)])
+    ])]),
+    g.description ? el('p', { class: 'ex-desc', text: g.description }) : null,
+    el('div', { class: 'ex-row' }, [avatarStack(g.avatars, g.member_count),
+      el('span', { class: 'ex-sports' }, (g.sports || []).map((s) => el('span', { class: 'chip', text: SPORT_EMOJI[s] + ' ' + TYPE_LABEL[s] })))]),
+    el('div', { class: 'ex-stats' }, [
+      el('div', null, [el('b', { text: fmtNum(Number(g.month_km)) }), el('span', { text: t('ex.km') })]),
+      el('div', null, [el('b', { text: fmtInt(g.month_workouts) }), el('span', { text: t('ex.workouts') })]),
+      el('div', null, [el('b', { text: fmtInt(g.month_points) }), el('span', { text: t('ex.points') })])
+    ]),
+    el('div', { class: 'ex-top3' }, [el('span', { class: 'ex-label', text: t('ex.top3') })].concat(top.length
+      ? top.map((p, i) => el('span', { class: 'ex-podium' }, [el('span', { text: ['🥇', '🥈', '🥉'][i] }),
+          avatar({ avatar_emoji: p.emoji, avatar_color: p.color, display_name: p.name }, 'sm'), el('span', { class: 'ex-pname', text: p.name })]))
+      : [el('span', { class: 'muted', text: t('ex.noTop') })])),
+    el('div', { class: 'ex-foot' }, [
+      el('span', { class: 'muted', text: '⚡ ' + chCountText(g.active_challenges) }),
+      joinButton(g, true)
+    ])
+  ]);
+  const open = (e) => { if (e.target.closest('button')) return; openPreview(g.id); };
+  card.addEventListener('click', open);
+  card.addEventListener('keydown', (e) => { if (e.key === 'Enter') open(e); });
+  return card;
+}
+
+function joinButton(g, slim) {
+  const cls = slim ? ' slim' : '';
+  if (g.is_member) return el('button', { type: 'button', class: 'primary-btn' + cls, text: t('ex.open'), onclick: async () => { state.explore.previewId = null; await switchGroup(g.id); setView('group'); } });
+  if (g.requested) return el('button', { type: 'button', class: 'ghost-btn' + cls, text: t('ex.cancelRequest'), onclick: () => cancelRequest(g) });
+  return el('button', { type: 'button', class: 'primary-btn ex-join' + cls, text: g.visibility === 'request' ? t('ex.request') : t('ex.join'), onclick: () => joinFromExplore(g) });
+}
+
+async function joinFromExplore(g) {
+  const { data, error } = await state.sb.rpc('join_public_group', { p_group: g.id });
+  if (error) return toast(errMsg(error));
+  state.explore.list = null;
+  if (data === 'requested') {
+    toast(t('ex.requestSent', { name: g.name }));
+    if (state.explore.previewId) openPreview(g.id); else openExplore(true);
+    return;
+  }
+  state.explore.previewId = null;
+  await loadGroups();
+  await switchGroup(g.id);
+  setView('group');
+  window.scrollTo({ top: $('mainNav').offsetTop - 4 });
+  toast(t('ex.joined', { name: g.name }));
+}
+async function cancelRequest(g) {
+  const { error } = await state.sb.rpc('cancel_join_request', { p_group: g.id });
+  if (error) return toast(errMsg(error));
+  toast(t('ex.requestCancelled'));
+  state.explore.list = null;
+  if (state.explore.previewId) openPreview(g.id); else openExplore(true);
+}
+
+function closePreview() { state.explore.previewId = null; openExplore(); }
+
+async function openPreview(id) {
+  state.explore.previewId = id;
+  $('exploreBrowse').hidden = true;
+  const box = clear($('explorePreview')); box.hidden = false;
+  box.appendChild(el('p', { class: 'muted', text: t('loading') }));
+  window.scrollTo({ top: $('mainNav').offsetTop - 4 });
+  const { data, error } = await state.sb.rpc('explore_group_detail', { p_group: id, p_today: today() });
+  if (state.explore.previewId !== id) return;
+  clear(box);
+  if (error) { box.append(el('button', { type: 'button', class: 'link-btn', text: t('ex.back'), onclick: closePreview }), el('p', { class: 'form-error', text: errMsg(error) })); return; }
+  renderPreview(box, data);
+}
+
+function renderPreview(box, d) {
+  const em = el('span', { class: 'group-emoji', text: d.emoji }); em.style.setProperty('--gc', d.color);
+  box.appendChild(el('button', { type: 'button', class: 'link-btn ex-back', text: t('ex.back'), onclick: closePreview }));
+  box.appendChild(el('section', { class: 'panel group-head ex-phead' }, [
+    el('div', { class: 'group-id' }, [em, el('div', null, [
+      el('h2', { text: d.name }),
+      el('p', { class: 'muted', text: t('ex.members', { n: d.member_count }) + ' · ' }, [visBadge(d.visibility)]),
+      d.description ? el('p', { class: 'group-desc', text: d.description }) : null
+    ])]),
+    el('div', { class: 'group-actions' }, [joinButton(d, false)])
+  ]));
+  const w = d.week || {};
+  box.appendChild(el('p', { class: 'notice ex-ro', text: '👀 ' + t('ex.readOnly') }));
+  // leaderboard
+  const rows = (d.top10 || []).map((r) => el('tr', null, [
+    el('td', { class: 'rank', text: r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : String(r.rank) }),
+    el('td', null, [el('span', { class: 'who' }, [avatar({ avatar_emoji: r.emoji, avatar_color: r.color, display_name: r.name }, 'sm'), el('span', { text: r.name })])]),
+    el('td', { class: 'num', text: fmtInt(r.points) }), el('td', { class: 'num', text: fmtInt(r.workouts) }), el('td', { class: 'num', text: fmtNum(Number(r.km)) })
+  ]));
+  box.appendChild(el('section', { class: 'panel leaderboard-panel' }, [
+    el('div', { class: 'panel-head' }, [el('h2', { text: t('ex.lbTitle') })]),
+    rows.length ? el('div', { class: 'table-wrap' }, [el('table', { class: 'lb ex-lb' }, [
+      el('thead', null, [el('tr', null, [el('th', { text: '#' }), el('th', { text: t('ex.colName') }), el('th', { class: 'num', text: t('ex.colPoints') }), el('th', { class: 'num', text: t('ex.colWorkouts') }), el('th', { class: 'num', text: 'km' })])]),
+      el('tbody', null, rows)])]) : el('p', { class: 'muted', text: t('ex.nothing') })
+  ]));
+  const chs = (d.challenges || []).map((c) => el('div', { class: 'gg' }, [
+    el('div', { class: 'gg-head' }, [el('b', { text: '⚡ ' + c.title }), el('span', { class: 'reward', text: t('ex.reward', { n: c.reward }) })]),
+    el('p', { class: 'muted', text: fmtMetric(c.metric, Number(c.target)) + (c.activity_type ? ' · ' + TYPE_LABEL[c.activity_type] : '') + ' · ' + t('ex.endsOn', { d: shortDate(c.end_date) }) + ' · ' + t('ex.joinedCh', { n: c.participants }) })
+  ]));
+  const goals = (d.goals || []).map((g) => {
+    const pct = Math.min(100, Number(g.progress) / Number(g.target) * 100);
+    const bar = el('div', { class: 'pbar' }, [el('span', { class: 'seg' })]); bar.firstChild.style.width = pct + '%'; bar.firstChild.style.background = 'linear-gradient(90deg, var(--accent), var(--accent2))';
+    return el('div', { class: 'gg' }, [
+      el('div', { class: 'gg-head' }, [el('b', { text: g.title }), el('span', { class: 'muted', text: shortDate(g.start_date) + ' – ' + shortDate(g.end_date) })]),
+      bar, el('p', { class: 'muted', text: fmtMetric(g.metric, Number(g.progress)) + ' / ' + fmtMetric(g.metric, Number(g.target)) + ' · ' + Math.round(pct) + '%' })]);
+  });
+  const recent = (d.recent || []).map((r) => el('div', { class: 'feed-item' }, [
+    avatar({ avatar_emoji: r.emoji, avatar_color: r.color, display_name: r.name }, 'sm'),
+    el('div', { class: 'feed-body' }, [el('p', { class: 'feed-line' }, [el('b', { text: r.name }), document.createTextNode(' ' + TYPE_VERB[r.type] + ' ' + (r.km ? fmtNum(Number(r.km)) + ' km' : fmtMinutes(Number(r.minutes))))]),
+      el('p', { class: 'feed-meta muted', text: SPORT_EMOJI[r.type] + ' ' + TYPE_LABEL[r.type] + ' · ' + timeAgo(r.at) })])
+  ]));
+  box.appendChild(el('div', { class: 'social-layout ex-layout' }, [
+    el('div', null, [
+      el('section', { class: 'panel' }, [el('div', { class: 'panel-head' }, [el('h2', { text: t('ex.activeCh') })])].concat(chs.length ? chs : [el('p', { class: 'muted', text: t('ex.noChallenges') })])),
+      el('section', { class: 'panel' }, [el('div', { class: 'panel-head' }, [el('h2', { text: t('ex.goals') })])].concat(goals.length ? goals : [el('p', { class: 'muted', text: t('ex.nothing') })]))
+    ]),
+    el('section', { class: 'panel feed-panel' }, [
+      el('div', { class: 'panel-head' }, [el('h2', { text: t('ex.recent') })]),
+      el('p', { class: 'ex-week' }, [el('b', { text: t('ex.week') + ': ' }), document.createTextNode(t('ex.weekLine', { w: w.workouts || 0, km: fmtNum(Number(w.km || 0)), min: fmtInt(w.minutes), m: w.active_members || 0 }))])
+    ].concat(recent.length ? recent : [el('p', { class: 'muted', text: t('ex.nothing') })]))
+  ]));
+  const foot = el('div', { class: 'ex-pfoot' }, [joinButton(d, false)]);
+  box.appendChild(foot);
+}
 
 // ======================================================================
 // Me view
@@ -1610,7 +1825,7 @@ function showAuth() {
   state.mode = null;
   document.body.classList.add('auth-mode');
   $('authView').hidden = false;
-  ['homeView', 'groupView', 'meView'].forEach((v) => { $(v).hidden = true; });
+  ['homeView', 'groupView', 'exploreView', 'meView'].forEach((v) => { $(v).hidden = true; });
   $('mainNav').hidden = true;
   $('groupSwitchWrap').hidden = true;
   renderInviteBanner();
@@ -1628,10 +1843,11 @@ function renderInviteBanner() {
 function setView(v) {
   if (!state.mode) return;
   state.view = v;
-  ['home', 'group', 'me'].forEach((k) => { $(k + 'View').hidden = k !== v; });
+  ['home', 'group', 'explore', 'me'].forEach((k) => { $(k + 'View').hidden = k !== v; });
   document.querySelectorAll('.nav-btn').forEach((b) => { const on = b.dataset.view === v; b.classList.toggle('active', on); b.setAttribute('aria-current', on ? 'page' : 'false'); });
   if (v === 'group') { renderGroupView(); if (state.mode === 'remote' && state.groupId && !state.groupData) refreshGroup(); }
   if (v === 'me') renderMe();
+  if (v === 'explore') openExplore();
 }
 document.querySelectorAll('.nav-btn').forEach((b) => b.addEventListener('click', () => { setView(b.dataset.view); window.scrollTo({ top: $('mainNav').offsetTop - 4, behavior: 'smooth' }); }));
 

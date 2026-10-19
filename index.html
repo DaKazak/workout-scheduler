@@ -54,6 +54,7 @@
   <nav class="mainnav" id="mainNav" aria-label="Sections" hidden>
     <button type="button" class="nav-btn active" data-view="home"><span aria-hidden="true">🏠</span><b data-i18n="nav.home">Plan</b></button>
     <button type="button" class="nav-btn" data-view="group"><span aria-hidden="true">🏆</span><b data-i18n="nav.group">Group</b></button>
+    <button type="button" class="nav-btn" data-view="explore"><span aria-hidden="true">🧭</span><b data-i18n="nav.explore">Explore</b></button>
     <button type="button" class="nav-btn" data-view="me"><span aria-hidden="true">🏅</span><b data-i18n="nav.me">Me</b></button>
   </nav>
 
@@ -222,6 +223,12 @@
           </form>
           <p class="form-error" id="joinError" hidden></p>
         </div>
+        <div class="panel cta-card remote-only">
+          <div class="cta-emoji">🧭</div>
+          <h2 data-i18n="ex.ctaTitle">Find a group</h2>
+          <p class="muted" data-i18n="ex.ctaText">Browse public groups, peek at their leaderboard and jump in.</p>
+          <button type="button" class="ghost-btn" id="exploreCtaBtn" data-i18n="ex.ctaBtn">Explore groups</button>
+        </div>
       </div>
 
       <div id="groupContent" hidden>
@@ -231,6 +238,7 @@
             <div>
               <h2 id="groupName">Group</h2>
               <p class="muted" id="groupMeta">0 members</p>
+              <p class="group-desc" id="groupDesc" hidden></p>
             </div>
           </div>
           <div class="group-actions">
@@ -284,6 +292,38 @@
           <div id="hallOfFame"></div>
         </section>
       </div>
+    </section>
+
+    <!-- ================= EXPLORE ================= -->
+    <section id="exploreView" hidden>
+      <div id="exploreLocal" class="panel cta-card" hidden>
+        <div class="cta-emoji">🧭</div>
+        <h2 data-i18n="ex.title">Explore groups</h2>
+        <p class="muted" data-i18n="ex.localText">Sign in to discover public groups and join them.</p>
+      </div>
+      <div id="exploreBrowse">
+        <section class="panel explore-head">
+          <div>
+            <h2 data-i18n="ex.title">Explore groups</h2>
+            <p class="muted" data-i18n="ex.sub">Public groups you’re not in yet. Peek inside, then join in one tap.</p>
+          </div>
+          <div class="explore-tools">
+            <input type="search" id="exSearch" maxlength="50" placeholder="Search groups" aria-label="Search groups">
+            <select id="exSport" aria-label="Sport">
+              <option value="" data-i18n="ex.allSports">All sports</option>
+              <option value="running">🏃 Running</option><option value="cycling">🚴 Cycling</option>
+              <option value="walking">🚶 Walking</option><option value="workout">💪 Workout</option>
+            </select>
+            <select id="exSort" aria-label="Sort">
+              <option value="active" data-i18n="ex.sortActive">Most active</option>
+              <option value="members" data-i18n="ex.sortMembers">Most members</option>
+              <option value="newest" data-i18n="ex.sortNewest">Newest</option>
+            </select>
+          </div>
+        </section>
+        <div id="exploreGrid" class="explore-grid"></div>
+      </div>
+      <div id="explorePreview" hidden></div>
     </section>
 
     <!-- ================= ME ================= -->
@@ -360,6 +400,12 @@
       <label class="field"><span>Group name</span><input type="text" id="gName" maxlength="50" required placeholder="e.g. Tel Aviv Runners"></label>
       <div class="field"><span>Emoji</span><div class="emoji-pick" id="gEmoji"></div></div>
       <div class="field"><span>Colour</span><div class="color-pick" id="gColor"></div></div>
+      <label class="field"><span data-i18n="grp.desc">Description</span><textarea id="gDesc" maxlength="160" rows="2" placeholder="What’s this group about?"></textarea></label>
+      <label class="field"><span data-i18n="grp.visibility">Who can join</span><select id="gVis">
+        <option value="public" data-i18n="vis.public">🌍 Public — anyone can find and join</option>
+        <option value="request" data-i18n="vis.request">✋ Request to join — admins approve</option>
+        <option value="private" data-i18n="vis.private">🔒 Private — invite code only</option>
+      </select></label>
       <p class="form-error" id="groupError" hidden></p>
       <div class="form-actions">
         <button type="submit" class="primary-btn" value="save" id="groupSave">Create</button>
@@ -405,6 +451,12 @@
         <label class="field"><span>Name</span><input type="text" id="mName" maxlength="50"></label>
         <div class="field"><span>Emoji</span><div class="emoji-pick" id="mEmoji"></div></div>
         <div class="field"><span>Colour</span><div class="color-pick" id="mColor"></div></div>
+        <label class="field"><span data-i18n="grp.desc">Description</span><textarea id="mDesc" maxlength="160" rows="2" placeholder="What’s this group about?"></textarea></label>
+      <label class="field"><span data-i18n="grp.visibility">Who can join</span><select id="mVis">
+        <option value="public" data-i18n="vis.public">🌍 Public — anyone can find and join</option>
+        <option value="request" data-i18n="vis.request">✋ Request to join — admins approve</option>
+        <option value="private" data-i18n="vis.private">🔒 Private — invite code only</option>
+      </select></label>
         <div class="form-actions"><button type="button" class="primary-btn slim" id="mSave">Save group</button></div>
         <h3>Daily goals</h3>
         <p class="hint">Members earn +5 points per goal hit each day, +10 more for hitting them all. Leave empty to use the defaults.</p>
@@ -418,6 +470,10 @@
         </div>
         <h3>Invite</h3>
         <div class="form-actions"><button type="button" class="ghost-btn" id="mRegen">Reset invite code</button></div>
+      </div>
+      <div class="admin-only" id="mRequestsWrap">
+        <h3 data-i18n="req.title">Join requests</h3>
+        <div id="mRequests" class="members"></div>
       </div>
       <h3>Members</h3>
       <div id="mMembers" class="members"></div>

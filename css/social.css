@@ -321,3 +321,53 @@ table.lb { width: 100%; border-collapse: separate; border-spacing: 0 6px; font-s
   .brand span { display: none; }
   .group-switch select { max-width: 170px; }
 }
+
+/* ---------- Explore ---------- */
+.group-desc { margin: 4px 0 0; font-size: 13.5px; color: var(--muted, #9aa4b2); max-width: 60ch; }
+.explore-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.explore-head h2 { margin: 0 0 4px; }
+.explore-head p { margin: 0; }
+.explore-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.explore-tools input, .explore-tools select { min-height: 40px; }
+.explore-tools input { min-width: 200px; }
+.explore-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-bottom: 18px; }
+.explore-grid .panel + .panel { margin-bottom: 0; }
+.explore-empty { grid-column: 1 / -1; text-align: center; }
+.ex-card { display: flex; flex-direction: column; gap: 12px; cursor: pointer; transition: transform .15s ease, border-color .15s ease; margin: 0; }
+.ex-card:hover, .ex-card:focus-visible { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 45%, transparent); outline: none; }
+.ex-top { display: flex; gap: 12px; align-items: center; }
+.ex-title h3 { margin: 0; font-size: 18px; }
+.ex-title p { margin: 2px 0 0; font-size: 13px; }
+.ex-desc { margin: 0; font-size: 14px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ex-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.avatar-stack { display: flex; }
+.avatar-stack .avatar { margin-inline-end: -8px; box-shadow: 0 0 0 2px #121826; }
+.avatar-stack .more-av { --ac: #2a3344; font-size: 11px; font-weight: 800; color: #cfd6e2; background: #2a3344; }
+.ex-sports { display: flex; gap: 6px; flex-wrap: wrap; }
+.ex-sports .chip { padding: 3px 9px; }
+.ex-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ex-stats div { background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; text-align: center; }
+.ex-stats b { display: block; font-size: 18px; }
+.ex-stats span { font-size: 11.5px; color: var(--muted, #9aa4b2); text-transform: uppercase; letter-spacing: .04em; }
+.ex-top3 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; }
+.ex-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted, #9aa4b2); }
+.ex-podium { display: inline-flex; align-items: center; gap: 4px; }
+.ex-pname { font-weight: 600; }
+.ex-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: auto; padding-top: 4px; font-size: 13px; }
+.vis-badge { font-size: 12px; white-space: nowrap; }
+.ex-back { margin: 0 0 12px; font-weight: 700; }
+.ex-ro { margin-bottom: 18px; }
+.ex-week { font-size: 14px; margin: 0 0 12px; }
+.ex-pfoot { display: flex; justify-content: center; margin: 4px 0 24px; }
+.ex-lb td.num, .ex-lb th.num { text-align: end; }
+.ex-lb .who { display: inline-flex; align-items: center; gap: 8px; }
+.ex-layout > div { display: flex; flex-direction: column; gap: 18px; }
+.ex-layout > div > .panel { margin: 0; }
+@media (max-width: 640px) {
+  .explore-grid { grid-template-columns: 1fr; }
+  .explore-tools, .explore-tools input { width: 100%; min-width: 0; }
+  .explore-tools input { flex: 1 1 100%; }
+  .explore-tools select { flex: 1; }
+  .ex-phead .group-actions { width: 100%; }
+  .ex-phead .group-actions button { width: 100%; }
+}
