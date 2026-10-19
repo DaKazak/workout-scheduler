@@ -1,0 +1,4 @@
+.secrets
+supabase/.temp/
+supabase/.branches/
+node_modules/

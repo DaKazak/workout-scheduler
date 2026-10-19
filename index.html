@@ -1,13 +1,15 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Momentum — Workout Scheduler</title>
-  <meta name="description" content="Plan runs, gym sessions, walks and rides. Track completed workouts and estimated calories.">
+  <meta name="description" content="Plan runs, gym sessions, walks and rides with friends. Points, leaderboards, challenges and streaks.">
   <meta name="theme-color" content="#0b0f17">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0f17'/%3E%3Cpath d='M14 40 L26 26 L34 34 L50 18' stroke='%23c6ff3d' stroke-width='7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/social.css">
 </head>
 <body>
   <header class="hero" id="hero">
@@ -19,14 +21,21 @@
     </div>
     <div class="hero-shade"></div>
     <nav class="topbar">
-      <a class="brand" href="#" aria-label="Momentum home">
+      <a class="brand" href="./" aria-label="Momentum home">
         <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0b0f17"/><path d="M14 40 L26 26 L34 34 L50 18" stroke="#c6ff3d" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Momentum</span>
       </a>
-      <button class="icon-btn" id="settingsBtn" type="button" aria-haspopup="dialog" aria-label="Settings">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.3 7.3 0 0 0-1.7-1L15 3.3h-4l-.3 2.7a7.3 7.3 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.7 1.7 1l.3 2.7h4l.3-2.7c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.4L19.4 13zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
-        <span class="weight-chip" id="weightChip">70 kg</span>
-      </button>
+      <div class="topbar-right">
+        <label class="group-switch" id="groupSwitchWrap" hidden>
+          <span class="sr-only" data-i18n="group.switcher">Group</span>
+          <select id="groupSelect" aria-label="Switch group"></select>
+        </label>
+        <button class="icon-btn" id="settingsBtn" type="button" aria-haspopup="dialog" aria-label="Profile and settings">
+          <span class="avatar sm" id="topAvatar" hidden></span>
+          <svg id="gearIcon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.3 7.3 0 0 0-1.7-1L15 3.3h-4l-.3 2.7a7.3 7.3 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.7 1.7 1l.3 2.7h4l.3-2.7c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.4L19.4 13zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
+          <span class="weight-chip" id="weightChip">70 kg</span>
+        </button>
+      </div>
     </nav>
     <div class="hero-content">
       <p class="eyebrow" id="greeting">Let's move</p>
@@ -35,100 +44,280 @@
       <figure class="quote" id="quoteBox" aria-live="polite">
         <blockquote id="quoteText"></blockquote>
         <figcaption id="quoteAuthor"></figcaption>
-        <button type="button" class="ghost-btn" id="nextQuoteBtn">Next quote
+        <button type="button" class="ghost-btn" id="nextQuoteBtn"><span data-i18n="quote.next">Next quote</span>
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M13 5l7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2l-4.6-4.6z"/></svg>
         </button>
       </figure>
     </div>
   </header>
 
+  <nav class="mainnav" id="mainNav" aria-label="Sections" hidden>
+    <button type="button" class="nav-btn active" data-view="home"><span aria-hidden="true">🏠</span><b data-i18n="nav.home">Plan</b></button>
+    <button type="button" class="nav-btn" data-view="group"><span aria-hidden="true">🏆</span><b data-i18n="nav.group">Group</b></button>
+    <button type="button" class="nav-btn" data-view="me"><span aria-hidden="true">🏅</span><b data-i18n="nav.me">Me</b></button>
+  </nav>
+
   <main class="container">
-    <section class="stats" aria-label="This week">
-      <div class="stat"><span class="stat-label">Workouts this week</span><strong id="statCount">0</strong><small id="statCountSub">0 planned</small></div>
-      <div class="stat"><span class="stat-label">Distance</span><strong id="statKm">0</strong><small id="statKmSub">km done</small></div>
-      <div class="stat"><span class="stat-label">Active time</span><strong id="statMin">0</strong><small id="statMinSub">min done</small></div>
-      <div class="stat kcal-stat"><span class="stat-label">Calories</span><strong id="statKcal">0</strong><small id="statKcalSub">kcal burned</small></div>
-    </section>
-
-    <div class="layout">
-      <section class="panel form-panel" id="formPanel" aria-labelledby="formTitle">
-        <h2 id="formTitle">Plan a workout</h2>
-        <form id="workoutForm" novalidate>
-          <fieldset class="type-picker">
-            <legend>Type</legend>
-            <label class="type-opt"><input type="radio" name="type" value="running" checked><span style="background-image:url(img/running-thumb.jpg)"><b>Running</b></span></label>
-            <label class="type-opt"><input type="radio" name="type" value="workout"><span style="background-image:url(img/workout-thumb.jpg)"><b>Workout</b></span></label>
-            <label class="type-opt"><input type="radio" name="type" value="walking"><span style="background-image:url(img/walking-thumb.jpg)"><b>Walking</b></span></label>
-            <label class="type-opt"><input type="radio" name="type" value="cycling"><span style="background-image:url(img/cycling-thumb.jpg)"><b>Cycling</b></span></label>
-          </fieldset>
-
-          <div class="grid2">
-            <label class="field"><span>Date</span><input type="date" name="date" id="dateInput" required></label>
-            <label class="field"><span>Time</span><input type="time" name="time" id="timeInput" required></label>
-          </div>
-
-          <div class="field">
-            <span>Measure by</span>
-            <div class="segmented" role="radiogroup" aria-label="Measure by">
-              <label><input type="radio" name="measure" value="distance" checked><span>Distance (km)</span></label>
-              <label><input type="radio" name="measure" value="duration"><span>Duration (min)</span></label>
-            </div>
-            <small class="hint" id="measureHint" hidden>Strength/gym workouts are tracked by time only.</small>
-          </div>
-
-          <div class="grid2">
-            <label class="field"><span id="valueLabel">Distance (km)</span>
-              <input type="number" name="value" id="valueInput" inputmode="decimal" min="0.1" step="0.1" placeholder="e.g. 5" required>
-            </label>
-            <label class="field"><span>Intensity</span>
-              <select name="intensity" id="intensityInput">
-                <option value="light">Light</option>
-                <option value="moderate" selected>Moderate</option>
-                <option value="vigorous">Vigorous</option>
-              </select>
-            </label>
-          </div>
-
-          <label class="field"><span>Notes <em>(optional)</em></span>
-            <textarea name="notes" id="notesInput" rows="2" maxlength="300" placeholder="Route, sets, playlist, who you're meeting…"></textarea>
+    <!-- ================= AUTH ================= -->
+    <section id="authView" class="auth-wrap" hidden>
+      <div class="invite-banner" id="inviteBanner" hidden></div>
+      <div class="panel auth-card">
+        <div class="tabs" role="tablist">
+          <button role="tab" class="tab active" id="tabLogin" type="button" data-i18n="auth.login">Sign in</button>
+          <button role="tab" class="tab" id="tabSignup" type="button" data-i18n="auth.signup">Create account</button>
+        </div>
+        <form id="authForm" novalidate>
+          <label class="field" id="nameField" hidden><span data-i18n="auth.name">Display name</span>
+            <input type="text" id="authName" maxlength="40" autocomplete="nickname" placeholder="e.g. Daniel">
           </label>
-
-          <div class="estimate" id="estimate" aria-live="polite">
-            <div class="est-kcal"><strong id="estKcal">0</strong><span>kcal est.</span></div>
-            <div class="est-detail" id="estDetail">Enter a distance or duration</div>
-          </div>
-          <details class="how">
-            <summary>How is this estimated?</summary>
-            <p><b>kcal = MET × body weight (kg) × hours.</b> MET values are approximate, from the Compendium of Physical Activities.</p>
-            <ul>
-              <li><b>Running</b> — light 8.3 (7:30 /km), moderate 9.8 (6:00 /km), vigorous 11.8 (5:00 /km)</li>
-              <li><b>Walking</b> — light 3.0 (15:00 /km), moderate 3.5 (12:00 /km), vigorous 5.0 (~9:20 /km)</li>
-              <li><b>Cycling</b> — light 6.8 (17 km/h), moderate 8.0 (20 km/h), vigorous 10.0 (24 km/h)</li>
-              <li><b>Workout</b> (strength / gym) — light 3.5, moderate 5.0, vigorous 6.0; time only</li>
-            </ul>
-            <p>Distance entries are converted to time using the pace shown. Real burn varies with fitness, terrain, rest periods and more — treat it as a ballpark.</p>
-          </details>
-          <p class="form-error" id="formError" role="alert" hidden></p>
+          <label class="field"><span data-i18n="auth.email">Email</span>
+            <input type="email" id="authEmail" autocomplete="email" required placeholder="you@example.com">
+          </label>
+          <label class="field"><span data-i18n="auth.password">Password</span>
+            <input type="password" id="authPassword" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters">
+          </label>
+          <p class="form-error" id="authError" role="alert" hidden></p>
+          <p class="form-ok" id="authInfo" role="status" hidden></p>
           <div class="form-actions">
-            <button type="submit" class="primary-btn" id="submitBtn">Add to schedule</button>
-            <button type="button" class="ghost-btn" id="cancelEditBtn" hidden>Cancel</button>
+            <button type="submit" class="primary-btn" id="authSubmit" data-i18n="auth.login">Sign in</button>
+          </div>
+          <div class="auth-links">
+            <button type="button" class="link-btn" id="forgotBtn" data-i18n="auth.forgot">Forgot password?</button>
+            <button type="button" class="link-btn" id="localModeBtn" data-i18n="auth.local">Use without an account (this device only)</button>
           </div>
         </form>
+      </div>
+      <div class="auth-pitch">
+        <h2>Train together.</h2>
+        <ul>
+          <li>🏆 Monthly leaderboards and a hall of fame</li>
+          <li>🎯 Daily goals, group goals and challenges</li>
+          <li>🔥 Streaks, badges and personal records</li>
+          <li>👏 Cheer your friends' workouts</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= HOME / PLAN ================= -->
+    <section id="homeView">
+      <div id="winnerSlotHome"></div>
+      <div id="importBanner" class="notice" hidden></div>
+      <div id="localModeBanner" class="notice" hidden></div>
+
+      <section class="stats" aria-label="This week">
+        <div class="stat"><span class="stat-label">Workouts this week</span><strong id="statCount">0</strong><small id="statCountSub">0 planned</small></div>
+        <div class="stat"><span class="stat-label">Distance</span><strong id="statKm">0</strong><small id="statKmSub">km done</small></div>
+        <div class="stat"><span class="stat-label">Active time</span><strong id="statMin">0</strong><small id="statMinSub">min done</small></div>
+        <div class="stat kcal-stat"><span class="stat-label">Calories</span><strong id="statKcal">0</strong><small id="statKcalSub">kcal burned</small></div>
+        <div class="stat pts-stat"><span class="stat-label">Points</span><strong id="statPts">0</strong><small id="statPtsSub">this week</small></div>
+        <div class="stat streak-stat"><span class="stat-label">Streak</span><strong id="statStreak">0</strong><small id="statStreakSub">days in a row</small></div>
       </section>
 
-      <section class="panel list-panel">
-        <div class="tabs" role="tablist">
-          <button role="tab" class="tab active" id="tabUpcoming" aria-selected="true" aria-controls="upcomingList">Upcoming <span class="count" id="upcomingCount">0</span></button>
-          <button role="tab" class="tab" id="tabHistory" aria-selected="false" aria-controls="historyList">History <span class="count" id="historyCount">0</span></button>
+      <section class="panel goals-panel" aria-labelledby="goalsTitle">
+        <div class="panel-head">
+          <h2 id="goalsTitle">Today's goals</h2>
+          <span class="muted" id="goalsSource">Default goals</span>
         </div>
-        <div id="upcomingList" role="tabpanel" aria-labelledby="tabUpcoming"></div>
-        <div id="historyList" role="tabpanel" aria-labelledby="tabHistory" hidden></div>
+        <div class="rings" id="myRings"></div>
+        <div class="group-today" id="groupToday" hidden></div>
       </section>
-    </div>
+
+      <div class="layout">
+        <section class="panel form-panel" id="formPanel" aria-labelledby="formTitle">
+          <h2 id="formTitle">Plan a workout</h2>
+          <form id="workoutForm" novalidate>
+            <fieldset class="type-picker">
+              <legend>Type</legend>
+              <label class="type-opt"><input type="radio" name="type" value="running" checked><span style="background-image:url(img/running-thumb.jpg)"><b>Running</b></span></label>
+              <label class="type-opt"><input type="radio" name="type" value="workout"><span style="background-image:url(img/workout-thumb.jpg)"><b>Workout</b></span></label>
+              <label class="type-opt"><input type="radio" name="type" value="walking"><span style="background-image:url(img/walking-thumb.jpg)"><b>Walking</b></span></label>
+              <label class="type-opt"><input type="radio" name="type" value="cycling"><span style="background-image:url(img/cycling-thumb.jpg)"><b>Cycling</b></span></label>
+            </fieldset>
+
+            <div class="grid2">
+              <label class="field"><span>Date</span><input type="date" name="date" id="dateInput" required></label>
+              <label class="field"><span>Time</span><input type="time" name="time" id="timeInput" required></label>
+            </div>
+
+            <div class="field">
+              <span>Measure by</span>
+              <div class="segmented" role="radiogroup" aria-label="Measure by">
+                <label><input type="radio" name="measure" value="distance" checked><span>Distance (km)</span></label>
+                <label><input type="radio" name="measure" value="duration"><span>Duration (min)</span></label>
+              </div>
+              <small class="hint" id="measureHint" hidden>Strength/gym workouts are tracked by time only.</small>
+            </div>
+
+            <div class="grid2">
+              <label class="field"><span id="valueLabel">Distance (km)</span>
+                <input type="number" name="value" id="valueInput" inputmode="decimal" min="0.1" step="0.1" placeholder="e.g. 5" required>
+              </label>
+              <label class="field"><span>Intensity</span>
+                <select name="intensity" id="intensityInput">
+                  <option value="light">Light</option>
+                  <option value="moderate" selected>Moderate</option>
+                  <option value="vigorous">Vigorous</option>
+                </select>
+              </label>
+            </div>
+            <label class="field" id="secondaryField"><span id="secondaryLabel">Time taken (min) <em>(optional — for pace records)</em></span>
+              <input type="number" name="secondary" id="secondaryInput" inputmode="decimal" min="0" step="1" placeholder="e.g. 28">
+            </label>
+
+            <label class="field"><span>Notes <em>(optional, private)</em></span>
+              <textarea name="notes" id="notesInput" rows="2" maxlength="300" placeholder="Route, sets, playlist, who you're meeting…"></textarea>
+            </label>
+            <label class="check-field" id="doneField"><input type="checkbox" id="doneInput"> <span>Already done — log it as completed</span></label>
+
+            <div class="estimate" id="estimate" aria-live="polite">
+              <div class="est-kcal"><strong id="estKcal">0</strong><span>kcal est.</span></div>
+              <div class="est-detail"><span id="estDetail">Enter a distance or duration</span><span class="est-pts" id="estPts"></span></div>
+            </div>
+            <details class="how">
+              <summary>How is this estimated?</summary>
+              <p><b>kcal = MET × body weight (kg) × hours.</b> MET values are approximate, from the Compendium of Physical Activities.</p>
+              <ul>
+                <li><b>Running</b> — light 8.3 (7:30 /km), moderate 9.8 (6:00 /km), vigorous 11.8 (5:00 /km)</li>
+                <li><b>Walking</b> — light 3.0 (15:00 /km), moderate 3.5 (12:00 /km), vigorous 5.0 (~9:20 /km)</li>
+                <li><b>Cycling</b> — light 6.8 (17 km/h), moderate 8.0 (20 km/h), vigorous 10.0 (24 km/h)</li>
+                <li><b>Workout</b> (strength / gym) — light 3.5, moderate 5.0, vigorous 6.0; time only</li>
+              </ul>
+              <p>Distance entries are converted to time using the pace shown, unless you enter the actual time taken. Real burn varies with fitness, terrain, rest periods and more — treat it as a ballpark.</p>
+            </details>
+            <p class="form-error" id="formError" role="alert" hidden></p>
+            <div class="form-actions">
+              <button type="submit" class="primary-btn" id="submitBtn">Add to schedule</button>
+              <button type="button" class="ghost-btn" id="cancelEditBtn" hidden>Cancel</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel list-panel">
+          <div class="tabs" role="tablist">
+            <button role="tab" class="tab active" id="tabUpcoming" aria-selected="true" aria-controls="upcomingList">Upcoming <span class="count" id="upcomingCount">0</span></button>
+            <button role="tab" class="tab" id="tabHistory" aria-selected="false" aria-controls="historyList">History <span class="count" id="historyCount">0</span></button>
+          </div>
+          <div id="upcomingList" role="tabpanel" aria-labelledby="tabUpcoming"></div>
+          <div id="historyList" role="tabpanel" aria-labelledby="tabHistory" hidden></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ================= GROUP ================= -->
+    <section id="groupView" hidden>
+      <div id="noGroup" class="no-group" hidden>
+        <div class="panel cta-card">
+          <div class="cta-emoji">🏁</div>
+          <h2>Start a group</h2>
+          <p class="muted">Create a crew, share the invite link with friends, and compete on a monthly leaderboard.</p>
+          <button type="button" class="primary-btn" id="createGroupBtn">Create a group</button>
+        </div>
+        <div class="panel cta-card">
+          <div class="cta-emoji">🤝</div>
+          <h2>Join friends</h2>
+          <p class="muted">Got an invite code? Paste it here.</p>
+          <form id="joinForm" class="join-form">
+            <input type="text" id="joinCode" maxlength="12" placeholder="e.g. K7Q2M9XD" autocapitalize="characters" aria-label="Invite code">
+            <button type="submit" class="ghost-btn">Join</button>
+          </form>
+          <p class="form-error" id="joinError" hidden></p>
+        </div>
+      </div>
+
+      <div id="groupContent" hidden>
+        <section class="panel group-head">
+          <div class="group-id">
+            <span class="group-emoji" id="groupEmoji">🔥</span>
+            <div>
+              <h2 id="groupName">Group</h2>
+              <p class="muted" id="groupMeta">0 members</p>
+            </div>
+          </div>
+          <div class="group-actions">
+            <button type="button" class="primary-btn slim" id="inviteBtn">Invite friends</button>
+            <button type="button" class="ghost-btn" id="manageBtn">Manage</button>
+            <button type="button" class="ghost-btn" id="newGroupBtn" title="Create or join another group">+ Group</button>
+          </div>
+        </section>
+
+        <div id="winnerSlotGroup"></div>
+
+        <section class="panel leaderboard-panel" aria-labelledby="lbTitle">
+          <div class="panel-head">
+            <h2 id="lbTitle">Leaderboard</h2>
+            <div class="segmented small" role="radiogroup" aria-label="Leaderboard period" id="lbPeriod">
+              <label><input type="radio" name="lbp" value="week"><span>Week</span></label>
+              <label><input type="radio" name="lbp" value="month" checked><span>Month</span></label>
+              <label><input type="radio" name="lbp" value="all"><span>All-time</span></label>
+            </div>
+          </div>
+          <p class="muted small-note" id="lbRange"></p>
+          <div class="table-wrap"><table class="lb" id="lbTable">
+            <thead><tr><th>#</th><th class="name-col">Name</th><th>Points</th><th>Workouts</th><th>km</th><th>Min</th><th>kcal</th><th title="Current streak">🔥</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+          <details class="how points-how">
+            <summary>How points work</summary>
+            <div id="pointsHow"></div>
+          </details>
+        </section>
+
+        <div class="layout social-layout">
+          <div class="col">
+            <section class="panel" aria-labelledby="ggTitle">
+              <div class="panel-head"><h2 id="ggTitle">Group goals</h2><button type="button" class="ghost-btn slim admin-only" id="addGoalBtn">+ Goal</button></div>
+              <div id="groupGoals"></div>
+            </section>
+            <section class="panel" aria-labelledby="chTitle">
+              <div class="panel-head"><h2 id="chTitle">Challenges</h2><button type="button" class="ghost-btn slim admin-only" id="addChallengeBtn">+ Challenge</button></div>
+              <div id="challenges"></div>
+            </section>
+          </div>
+          <section class="panel feed-panel" aria-labelledby="feedTitle">
+            <div class="panel-head"><h2 id="feedTitle">Activity</h2><button type="button" class="ghost-btn slim" id="refreshFeedBtn" aria-label="Refresh">↻</button></div>
+            <div id="feed"></div>
+          </section>
+        </div>
+
+        <section class="panel" id="hallPanel" aria-labelledby="hallTitle">
+          <h2 id="hallTitle">Hall of fame</h2>
+          <div id="hallOfFame"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ================= ME ================= -->
+    <section id="meView" hidden>
+      <section class="panel me-head">
+        <span class="avatar xl" id="meAvatar">🏃</span>
+        <div class="me-id">
+          <h2 id="meName">You</h2>
+          <p class="muted" id="meMeta"></p>
+        </div>
+        <button type="button" class="ghost-btn" id="editProfileBtn">Edit profile</button>
+      </section>
+      <div class="layout me-layout">
+        <div class="col">
+          <section class="panel week-card" id="weekCard"></section>
+          <section class="panel" aria-labelledby="prTitle"><h2 id="prTitle">Personal records</h2><div id="records" class="records"></div></section>
+        </div>
+        <div class="col">
+          <section class="panel" aria-labelledby="badgeTitle">
+            <div class="panel-head"><h2 id="badgeTitle">Badges</h2><span class="muted" id="badgeCount"></span></div>
+            <div id="badges" class="badges"></div>
+          </section>
+          <section class="panel">
+            <h2>Points</h2>
+            <div id="myPoints" class="my-points"></div>
+            <details class="how points-how"><summary>How points work</summary><div id="pointsHow2"></div></details>
+          </section>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="footer">
-    <p>Your data stays in this browser (localStorage). Nothing is uploaded.</p>
+    <p id="dataNote">Your data stays in this browser (localStorage). Nothing is uploaded.</p>
     <p class="credits">Photos (Wikimedia Commons):
       <a href="https://commons.wikimedia.org/wiki/File:Julien_Chorier,_ultra_traileur.jpg" target="_blank" rel="noopener">Running — Peignée Verticale / Damien Rosso, CC BY 4.0</a> ·
       <a href="https://commons.wikimedia.org/wiki/File:Attractive_man_lifting_dumbbell_weight_for_exercise_in_fitness_gym.jpg" target="_blank" rel="noopener">Workout — Nenad Stojkovic, CC BY 2.0</a> ·
@@ -138,16 +327,25 @@
     </p>
   </footer>
 
+  <!-- ================= DIALOGS ================= -->
   <dialog id="settingsDialog" class="dialog">
     <form method="dialog" id="settingsForm">
-      <h2>Settings</h2>
+      <h2>Profile &amp; settings</h2>
+      <div id="profileFields" hidden>
+        <label class="field"><span>Display name</span><input type="text" id="profName" maxlength="40"></label>
+        <div class="field"><span>Avatar</span><div class="emoji-pick" id="profEmoji"></div></div>
+        <div class="field"><span>Colour</span><div class="color-pick" id="profColor"></div></div>
+      </div>
       <label class="field"><span>Body weight (kg)</span>
         <input type="number" id="weightInput" min="25" max="300" step="0.5" inputmode="decimal" required>
       </label>
-      <p class="hint">Used for calorie estimates. Stored only on this device.</p>
+      <p class="hint">Used for calorie estimates.</p>
+      <p class="form-error" id="settingsError" hidden></p>
       <div class="danger-zone">
         <button type="button" class="ghost-btn" id="sampleBtn">Add sample workouts</button>
         <button type="button" class="ghost-btn danger" id="clearBtn">Delete all workouts</button>
+        <button type="button" class="ghost-btn" id="signInBtn" hidden>Sign in / create account</button>
+        <button type="button" class="ghost-btn" id="signOutBtn" hidden>Sign out</button>
       </div>
       <div class="form-actions">
         <button type="submit" class="primary-btn" value="save" id="saveSettingsBtn">Save</button>
@@ -156,13 +354,148 @@
     </form>
   </dialog>
 
+  <dialog id="groupDialog" class="dialog">
+    <form method="dialog" id="groupForm">
+      <h2 id="groupDialogTitle">Create a group</h2>
+      <label class="field"><span>Group name</span><input type="text" id="gName" maxlength="50" required placeholder="e.g. Tel Aviv Runners"></label>
+      <div class="field"><span>Emoji</span><div class="emoji-pick" id="gEmoji"></div></div>
+      <div class="field"><span>Colour</span><div class="color-pick" id="gColor"></div></div>
+      <p class="form-error" id="groupError" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="primary-btn" value="save" id="groupSave">Create</button>
+        <button type="submit" class="ghost-btn" value="cancel" formnovalidate>Cancel</button>
+      </div>
+      <div class="join-alt" id="groupJoinAlt">
+        <p class="muted">…or join with an invite code</p>
+        <div class="join-form"><input type="text" id="gJoinCode" maxlength="12" placeholder="Invite code" aria-label="Invite code"><button type="button" class="ghost-btn" id="gJoinBtn">Join</button></div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="inviteDialog" class="dialog">
+    <form method="dialog">
+      <h2>Invite friends</h2>
+      <p class="muted">Share this link. Friends sign up (or sign in) and join instantly.</p>
+      <div class="invite-code" id="inviteCode">——</div>
+      <input type="text" id="inviteLink" readonly aria-label="Invite link">
+      <div class="form-actions">
+        <button type="button" class="primary-btn" id="copyInviteBtn">Copy link</button>
+        <button type="button" class="ghost-btn" id="shareInviteBtn" hidden>Share…</button>
+        <button type="submit" class="ghost-btn" value="cancel">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="joinDialog" class="dialog">
+    <form method="dialog">
+      <h2>Join group?</h2>
+      <div class="join-preview" id="joinPreview"></div>
+      <p class="form-error" id="joinDialogError" hidden></p>
+      <div class="form-actions">
+        <button type="button" class="primary-btn" id="confirmJoinBtn">Join group</button>
+        <button type="submit" class="ghost-btn" value="cancel">Not now</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="manageDialog" class="dialog wide">
+    <form method="dialog" id="manageForm">
+      <h2>Manage group</h2>
+      <div class="admin-only">
+        <label class="field"><span>Name</span><input type="text" id="mName" maxlength="50"></label>
+        <div class="field"><span>Emoji</span><div class="emoji-pick" id="mEmoji"></div></div>
+        <div class="field"><span>Colour</span><div class="color-pick" id="mColor"></div></div>
+        <div class="form-actions"><button type="button" class="primary-btn slim" id="mSave">Save group</button></div>
+        <h3>Daily goals</h3>
+        <p class="hint">Members earn +5 points per goal hit each day, +10 more for hitting them all. Leave empty to use the defaults.</p>
+        <div id="mGoals"></div>
+        <div class="goal-add">
+          <input type="text" id="dgLabel" maxlength="60" placeholder="Label, e.g. Walk 5 km" aria-label="Goal label">
+          <select id="dgMetric" aria-label="Metric"><option value="distance">km</option><option value="minutes">minutes</option><option value="kcal">kcal</option><option value="workouts">workouts</option></select>
+          <select id="dgType" aria-label="Activity"><option value="">Any activity</option><option value="running">Running</option><option value="workout">Workout</option><option value="walking">Walking</option><option value="cycling">Cycling</option></select>
+          <input type="number" id="dgTarget" min="0.1" step="0.1" placeholder="Target" aria-label="Target">
+          <button type="button" class="ghost-btn" id="dgAdd">Add</button>
+        </div>
+        <h3>Invite</h3>
+        <div class="form-actions"><button type="button" class="ghost-btn" id="mRegen">Reset invite code</button></div>
+      </div>
+      <h3>Members</h3>
+      <div id="mMembers" class="members"></div>
+      <p class="form-error" id="manageError" hidden></p>
+      <div class="danger-zone">
+        <button type="button" class="ghost-btn danger" id="leaveGroupBtn">Leave group</button>
+        <button type="button" class="ghost-btn danger admin-only" id="deleteGroupBtn">Delete group</button>
+      </div>
+      <div class="form-actions"><button type="submit" class="ghost-btn" value="cancel">Close</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="goalDialog" class="dialog">
+    <form method="dialog" id="goalForm">
+      <h2>New group goal</h2>
+      <label class="field"><span>Title</span><input type="text" id="ggTitleIn" maxlength="80" required placeholder="e.g. Run 200 km together"></label>
+      <div class="grid2">
+        <label class="field"><span>Metric</span><select id="ggMetric"><option value="distance">km</option><option value="minutes">minutes</option><option value="kcal">kcal</option><option value="workouts">workouts</option></select></label>
+        <label class="field"><span>Activity</span><select id="ggType"><option value="">Any</option><option value="running">Running</option><option value="workout">Workout</option><option value="walking">Walking</option><option value="cycling">Cycling</option></select></label>
+      </div>
+      <label class="field"><span>Target</span><input type="number" id="ggTarget" min="1" step="1" required placeholder="200"></label>
+      <div class="grid2">
+        <label class="field"><span>Start</span><input type="date" id="ggStart" required></label>
+        <label class="field"><span>End</span><input type="date" id="ggEnd" required></label>
+      </div>
+      <p class="form-error" id="goalError" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="primary-btn" value="save">Create goal</button>
+        <button type="submit" class="ghost-btn" value="cancel" formnovalidate>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="challengeDialog" class="dialog">
+    <form method="dialog" id="challengeForm">
+      <h2>New challenge</h2>
+      <label class="field"><span>Title</span><input type="text" id="chTitleIn" maxlength="80" required placeholder="e.g. 50 km October run"></label>
+      <label class="field"><span>Description <em>(optional)</em></span><input type="text" id="chDesc" maxlength="300"></label>
+      <div class="grid2">
+        <label class="field"><span>Metric</span><select id="chMetric"><option value="distance">km</option><option value="minutes">minutes</option><option value="kcal">kcal</option><option value="workouts">workouts</option></select></label>
+        <label class="field"><span>Activity</span><select id="chType"><option value="">Any</option><option value="running">Running</option><option value="workout">Workout</option><option value="walking">Walking</option><option value="cycling">Cycling</option></select></label>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>Target</span><input type="number" id="chTarget" min="1" step="1" required placeholder="50"></label>
+        <label class="field"><span>Reward points (0–200)</span><input type="number" id="chReward" min="0" max="200" step="5" value="50" required></label>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>Start</span><input type="date" id="chStart" required></label>
+        <label class="field"><span>End</span><input type="date" id="chEnd" required></label>
+      </div>
+      <p class="form-error" id="challengeError" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="primary-btn" value="save">Create challenge</button>
+        <button type="submit" class="ghost-btn" value="cancel" formnovalidate>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="recoveryDialog" class="dialog">
+    <form method="dialog" id="recoveryForm">
+      <h2>Set a new password</h2>
+      <label class="field"><span>New password</span><input type="password" id="newPassword" minlength="8" autocomplete="new-password"></label>
+      <p class="form-error" id="recoveryError" hidden></p>
+      <div class="form-actions"><button type="button" class="primary-btn" id="recoverySave">Save password</button></div>
+    </form>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite" hidden>
     <span id="toastText"></span>
     <button type="button" id="toastUndo" class="toast-undo" hidden>Undo</button>
   </div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
 
+  <script src="js/config.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/calc.js"></script>
+  <script src="js/achievements.js"></script>
   <script src="js/quotes.js"></script>
-  <script src="js/app.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

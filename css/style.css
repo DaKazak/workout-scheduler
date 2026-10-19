@@ -86,7 +86,7 @@ a { color: var(--accent2); }
 
 /* ---------- layout ---------- */
 .container { max-width: 1180px; margin: -8px auto 0; padding: 0 20px 40px; position: relative; }
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 18px; }
 .stat {
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px;
   display: flex; flex-direction: column; box-shadow: var(--shadow);
@@ -251,7 +251,7 @@ select option { background: var(--panel-solid); }
 @media (max-width: 920px) {
   .layout { grid-template-columns: 1fr; }
   .form-panel { position: static; }
-  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stats { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 560px) {
   .hero { min-height: 0; }

@@ -1,0 +1,108 @@
+/* Centralised UI strings. To add Hebrew later: add an `he` table with the same keys,
+   set I18N.lang = 'he' and document.dir = 'rtl' (CSS uses logical properties where it matters). */
+(function (root) {
+  'use strict';
+  var en = {
+    'ago.now': 'just now', 'ago.min': '{n} min ago', 'ago.hour': '{n} h ago', 'ago.day': '{n} d ago',
+    'auth.login': 'Sign in', 'auth.signup': 'Create account', 'auth.name': 'Display name', 'auth.email': 'Email', 'auth.password': 'Password',
+    'auth.forgot': 'Forgot password?', 'auth.local': 'Use without an account (this device only)',
+    'auth.checkEmail': 'Account created — check your email to confirm, then sign in.',
+    'auth.cta': 'Sign in / create account', 'auth.forgotNeedEmail': 'Enter your email above first, then tap “Forgot password?”.',
+    'auth.invited': '🎉 You’ve been invited to a group (code {code}). Create an account or sign in to join.',
+    'auth.pwSaved': 'Password updated', 'auth.resetSent': 'If that email has an account, a reset link is on its way.',
+    'badges.count': '{n} of {total} earned',
+    'card.cheers': 'from {names}', 'card.complete': 'Mark completed', 'card.delete': 'Delete', 'card.done': 'Done', 'card.edit': 'Edit',
+    'card.futureLocked': 'Can be completed from its start time', 'card.kcalTitle': 'Estimated calories',
+    'card.latePts': 'Marked done more than 7 days after its date — counts for stats, not points', 'card.missed': 'Missed?', 'card.noPts': 'no pts',
+    'card.undoComplete': 'Undo complete',
+    'ch.any': 'any activity', 'ch.created': 'Challenge created — you’re in!', 'ch.delete': 'Delete challenge',
+    'ch.empty': 'No challenges yet. Ask your group admin to start one.', 'ch.emptyAdmin': 'No challenges yet — create one with “+ Challenge”.',
+    'ch.ended': 'Ended', 'ch.join': 'Join', 'ch.joined': '{n} joined', 'ch.joinedToast': 'You joined the challenge 💪', 'ch.leave': 'Leave',
+    'ch.left': '{n} days left', 'ch.leftToast': 'You left the challenge', 'ch.starts': 'Starts {d}', 'ch.target': '{what} · {type}',
+    'ch.youFinished': '🏁 You finished on {d}!', 'ch.yourProgress': 'You: {v} of {tgt}',
+    'confirm.delete': 'Delete this? This cannot be undone.', 'confirm.deleteAll': 'Delete all {n} workouts? This cannot be undone.',
+    'day.today': 'Today', 'day.tomorrow': 'Tomorrow', 'day.yesterday': 'Yesterday',
+    'empty.history': 'No completed workouts yet.', 'empty.historySub': 'Tick ✓ on a workout when you finish it.',
+    'empty.upcoming': 'Your schedule is clear.', 'empty.upcomingSub': 'Add a run, gym session, walk or ride with the form.',
+    'err.future': 'You can’t complete a workout scheduled in the future — change its date/time if you did it earlier.',
+    'err.generic': 'Something went wrong', 'err.network': 'Network error — check your connection and try again.',
+    'err.noProfile': 'Your profile could not be loaded. Please sign in again.', 'err.storage': 'Could not save (storage unavailable)',
+    'feed.cheer': 'Cheer {name} with {e}', 'feed.cheered': '{e} sent to {name}', 'feed.empty': 'No activity yet.',
+    'feed.emptySub': 'Completed workouts from the group show up here.', 'feed.you': 'You', 'feed.more': 'Show {n} more', 'feed.less': 'Show less',
+    'footer.local': 'Your data stays in this browser (localStorage). Nothing is uploaded.',
+    'footer.remote': 'Synced to your Momentum account. Notes stay private; group members see your completed workouts and totals.',
+    'form.add': 'Add to schedule', 'form.distance': 'Distance (km)', 'form.distanceCovered': 'Distance covered (km)', 'form.duration': 'Duration (min)',
+    'form.editTitle': 'Edit workout', 'form.enterValue': 'Enter a distance or duration', 'form.log': 'Log workout',
+    'form.optionalPR': '(optional — for pace records)', 'form.pts': '+{n} pts when completed', 'form.save': 'Save changes',
+    'form.timeTaken': 'Time taken (min)', 'form.title': 'Plan a workout',
+    'gg.created': 'Group goal created', 'gg.delete': 'Delete', 'gg.empty': 'No group goals yet.',
+    'gg.emptyAdmin': 'No group goals yet — add one, e.g. “Run 200 km together this month”.', 'gg.ended': 'ended', 'gg.upcoming': 'upcoming',
+    'goals.bonus': 'goal pts today ({hits}/{n} hit)', 'goals.default': 'Default goals', 'goals.groupToday': '{name} today',
+    'goals.membersHit': '{n}/{total} members', 'goals.setBy': 'Set by {name}',
+    'group.created': '“{name}” created — invite your friends!', 'group.meta': '{n} members · {role}', 'group.newOption': '＋ Create / join group',
+    'group.none': 'No group', 'group.switcher': 'Group', 'group.youAdmin': 'you’re an admin', 'group.youMember': 'member',
+    'hello.afternoon': 'Good afternoon', 'hello.evening': 'Good evening', 'hello.morning': 'Good morning', 'hello.night': 'Late night',
+    'hero.missed': 'You have missed sessions to review — or plan something new below.',
+    'hero.next': 'Next up: {type} · {what} — {day} at {time}', 'hero.none': 'Nothing scheduled yet — plan your next workout below.',
+    'hist.allTime': 'All time',
+    'hof.dismiss': 'Dismiss', 'hof.empty': 'Monthly champions appear here from the 1st of each month.',
+    'hof.eyebrow': '{month} champion · {group}', 'hof.won': '{name} won the month!', 'hof.youWon': 'You won the month! 🎉',
+    'import.btn': 'Import', 'import.done': 'Imported {n} workouts', 'import.skip': 'Not now',
+    'import.text': 'Found {n} workouts saved on this device. Import them into your account?',
+    'invite.copied': 'Invite link copied', 'invite.shareText': 'Join my group “{name}” on Momentum and let’s train together!',
+    'join.already': 'You’re already in {name}', 'join.joined': 'Welcome to {name}! 🎉', 'join.members': '{n} members', 'join.notFound': 'Invite code not found',
+    'lb.all': 'All-time totals', 'lb.allTime': 'All-time', 'lb.breakdown': 'Workouts {w} · Goals {g} · Streak {s} · Challenges {c}',
+    'lb.month': 'This month', 'lb.range': '{from} – {to}', 'lb.week': 'This week', 'lb.you': '(you)', 'loading': 'Loading…',
+    'local.banner': 'You’re using Momentum on this device only. Create a free account to sync, join friends and compete.',
+    'local.groupsText': 'Groups, leaderboards, challenges and cheers need a free account so friends can see each other’s progress.',
+    'local.groupsTitle': 'Compete with friends', 'local.noBackend': 'The group backend isn’t configured for this copy of the app.',
+    'manage.confirmDelete': 'This deletes the group, its goals and challenges for everyone. Type the group name to confirm: {name}',
+    'manage.confirmLeave': 'Leave {name}?', 'manage.confirmRegen': 'Reset the invite code? Old links will stop working.',
+    'manage.confirmRemove': 'Remove {name} from the group?', 'manage.defaults': 'Using defaults: {list}.', 'manage.deleted': '{name} deleted',
+    'manage.demote': 'Make member', 'manage.left': 'You left {name}', 'manage.promote': 'Make admin', 'manage.regenerated': 'New invite code ready',
+    'manage.remove': 'Remove', 'manage.saved': 'Group saved',
+    'me.activeDays': 'Active days', 'me.edit': 'Edit profile', 'me.localName': 'You (this device)', 'me.minutes': 'Minutes', 'me.points': 'Points',
+    'me.ptsBreak': 'Workouts {w} · Goals {g} · Streak {s}',
+    'me.ptsNoteLocal': 'Personal points use the default daily goals.',
+    'me.ptsNoteRemote': 'Personal points use your current group’s daily goals; challenge rewards are added on the group leaderboard.',
+    'me.settings': 'Settings', 'me.streaks': 'streak {cur} · best {best}', 'me.vsLast': 'vs last week',
+    'me.weekEmpty': 'No workouts yet this week — today is a great day to start.',
+    'me.weekLine': 'Mostly {type} this week, active {days} of 7 days. Keep it going!', 'me.weekTitle': 'This week', 'me.workouts': 'Workouts',
+    'nav.group': 'Group', 'nav.home': 'Plan', 'nav.me': 'Me',
+    'pr.bestStreak': 'Best streak', 'pr.bigWeekKm': 'Biggest week (km)', 'pr.bigWeekMin': 'Biggest week (time)', 'pr.days': 'days',
+    'pr.fastestRun': 'Fastest run pace', 'pr.kcalDay': 'Most kcal in a day', 'pr.longestRide': 'Longest ride', 'pr.longestRun': 'Longest run',
+    'pr.longestSession': 'Longest session', 'pr.longestWalk': 'Longest walk',
+    'pr.paceHint': 'Tip: enter “time taken” on distance runs to track your fastest pace.', 'pr.weekOf': 'week of {d}',
+    'quote.next': 'Next quote', 'quote.unknown': 'Unknown',
+    'settings.deleteAll': 'Delete all workouts', 'settings.deleteMine': 'Delete all my workouts', 'settings.saved': 'Saved — estimates use {w} kg',
+    'stat.donePlanned': 'done · {n} more planned', 'stat.kcalDone': 'kcal burned', 'stat.kmDone': 'km done', 'stat.minDone': 'min done',
+    'stat.planned': 'planned', 'stat.ptsSub': 'this week · {today} today', 'stat.streakBest': 'best: {n} days',
+    'stat.streakKeep': 'work out today to keep it', 'stat.streakOn': 'days in a row 🔥',
+    'toast.allDeleted': 'All workouts deleted', 'toast.back': 'Moved back to upcoming', 'toast.deleted': 'Workout deleted',
+    'toast.done': 'Nice work! {kcal} kcal · +{pts} pts 💪', 'toast.doneLate': 'Logged {kcal} kcal (too late for points)',
+    'toast.logged': '{type} logged · {kcal} kcal · +{pts} pts 💪', 'toast.nothing': 'Nothing to delete', 'toast.samples': 'Sample workouts added',
+    'toast.scheduled': '{type} scheduled for {day} at {time}', 'toast.updated': 'Workout updated',
+    'val.code': 'Enter an invite code', 'val.date': 'Pick a date.', 'val.dates': 'End date must be on or after the start date.',
+    'val.distance': 'Enter a distance in km.', 'val.duration': 'Enter a duration in minutes.', 'val.email': 'Enter a valid email address.',
+    'val.fields': 'Please fill in all fields.', 'val.goal': 'Enter a label and a target.', 'val.groupName': 'Give the group a name.',
+    'val.name': 'Enter a display name.', 'val.password': 'Password must be at least 8 characters.', 'val.time': 'Pick a time.',
+    'val.tooFar': 'That distance looks too long (max 500 km).', 'val.tooLong': 'Duration must be under 24 hours.',
+    'val.weight': 'Weight must be between 25 and 300 kg.'
+  };
+  var I18N = {
+    lang: 'en',
+    tables: { en: en },
+    t: function (key, vars) {
+      var s = (I18N.tables[I18N.lang] || en)[key];
+      if (s == null) s = en[key];
+      if (s == null) return key;
+      return vars ? s.replace(/\{(\w+)\}/g, function (m, k) { return vars[k] != null ? vars[k] : m; }) : s;
+    },
+    applyStatic: function () {
+      document.querySelectorAll('[data-i18n]').forEach(function (n) { n.textContent = I18N.t(n.getAttribute('data-i18n')); });
+      document.documentElement.lang = I18N.lang;
+    }
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = I18N;
+  else root.I18N = I18N;
+})(this);
